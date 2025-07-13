@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  campaigns       Campaign[]
+  notifications   Notification[]
+  analytics       Analytics[]
+  userPreferences UserPreferences?
+
+  @@map("users")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // AI Learning preferences
+  preferredTone     String?
+  preferredLength   Int?
+  preferredEmojis   Boolean @default(true)
+  preferredUrgency  String?
+  autoLearnEnabled  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  brand       String?
+  category    String?
+  offer       String?
+  
+  // File upload info
+  fileName    String?
+  fileType    String?
+  uploadedAt  DateTime @default(now())
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  notifications Notification[]
+  analytics     Analytics[]
+
+  @@map("campaigns")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  // PN Content
+  title       String
+  description String
+  
+  // Product/Offer Details
+  product     String?
+  brand       String?
+  category    String?
+  offer       String?
+  discountedPrice Float?
+  mrp         Float?
+  
+  // Emotional/Marketing Details
+  emotion     String?
+  urgency     String?
+  tone        String?
+  
+  // Performance Metrics
+  ctr         Float?
+  revenue     Float?
+  sent        Int?
+  clicks      Int?
+  conversions Int?
+  
+  // AI Generated flags
+  isGenerated Boolean @default(false)
+  rating      Int?    // User feedback rating (1-5)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+model Analytics {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  // Performance metrics
+  totalSent       Int     @default(0)
+  totalClicks     Int     @default(0)
+  totalConversions Int    @default(0)
+  avgCtr          Float   @default(0)
+  totalRevenue    Float   @default(0)
+  
+  // AI Learning metrics
+  topPerformingWords    String[] @default([])
+  topPerformingEmojis   String[] @default([])
+  bestPerformingTone    String?
+  bestPerformingLength  Int?
+  bestPerformingUrgency String?
+  
+  // Time-based metrics
+  period          String  // "daily", "weekly", "monthly"
+  periodStart     DateTime
+  periodEnd       DateTime
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("analytics")
+}
+
+model AILearningData {
+  id          String   @id @default(cuid())
+  userId      String
+  
+  // Pattern recognition data
+  successfulPatterns  Json    // Store successful PN patterns
+  failedPatterns      Json    // Store failed PN patterns
+  wordEffectiveness   Json    // Word performance mapping
+  emojiEffectiveness  Json    // Emoji performance mapping
+  
+  // Context vectors for similarity matching
+  contextVectors      Json?   // Store embeddings for similarity search
+  
+  // Learning metadata
+  totalDataPoints     Int     @default(0)
+  lastTrainingDate    DateTime?
+  modelVersion        String  @default("1.0")
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("ai_learning_data")
+}

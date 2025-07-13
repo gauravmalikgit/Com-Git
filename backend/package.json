@@ -1,0 +1,19 @@
+{
+  "name": "pn-generator-backend",
+  "version": "1.0.0",
+  "description": "AI-powered Push Notification Generator Backend",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["ai", "push-notifications", "generator", "express", "typescript"],
+  "author": "",
+  "license": "MIT"
+}
